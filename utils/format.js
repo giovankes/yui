@@ -1,6 +1,6 @@
 import { time } from 'console';
 
-function format_message(m) {
+export function format_message(m) {
   try {
     if (m.member) {
       const message = {
