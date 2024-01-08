@@ -46,4 +46,85 @@ class Wrapper {
     };
     this.init();
   }
+
+  /**
+   * Executes the callback when event is received.
+   * @param {string} name
+   * @param {function callback(event) {}} callback
+   */
+  on(name, callback) {
+    this.events[name] = callback;
+  }
+  /**
+   * @private
+   * @param {object} message
+   */
+  _heartbeat(s) {
+    this.socket.send(
+      JSON.stringify({
+        op: 1,
+        d: s,
+      })
+    );
+  }
+  /**
+   * @private
+   * @param {object} message
+   */
+  _onopen() {
+    if (this.events['open']) this.events['open']();
+  }
+
+  /**
+   * @private
+   * @param {object} message
+   */
+  _onmessage(message) {
+    const m = JSON.parse(message.data);
+    if (m.op === 10) {
+      setInterval(() => this._heartbeat(this.s), m.d.heartbeat_interval);
+      this.socket.send(
+        JSON.stringify({
+          op: 2,
+          d: {
+            token: this.token,
+            properties: {
+              os: this.settings.os.name,
+              device: this.settings.device,
+              os_version: this.settings.os.version,
+              browser: this.settings.browser.name,
+              browser_user_agent: this.settings.browser.browser_user_agent,
+              browser_version: this.settings.browser.version,
+              release_channel: 'stable',
+            },
+            presence: {
+              game: this.settings.game,
+              status: this.settings.status,
+              afk: this.settings.afk,
+            },
+            compress: false,
+            large_treshold: 200,
+          },
+        })
+      );
+    } else if (m.op === 0) {
+      this.s = m.s;
+      if (m.t === 'READY') {
+        this.client = m.d;
+      } else if (m.t === 'GUILD_MEMBER_LIST_UPDATE') {
+        console.log(m);
+      }
+      if (this.events[m.t.toLowerCase()]) this.events[m.t.toLowerCase()](m.d);
+    }
+  }
+  /**
+   * @private
+   * @param {object} message
+   */
+  _onerror(message) {
+    if (message.code !== 4004) this.init();
+    else if (this.events['error']) this.events['error']();
+  }
 }
+
+export default Wrapper;
