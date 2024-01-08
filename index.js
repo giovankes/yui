@@ -16,6 +16,6 @@ self.on('ready', () => {
 
 self.on('message_create', (m) => {
   if (m.webhook_id) return;
-
-  console.log(m);
 });
+
+console.info('scraping started');
