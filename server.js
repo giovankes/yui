@@ -3,8 +3,8 @@ import axios from 'axios';
 import express from 'express';
 import { MongoClient } from 'mongodb';
 import bodyParser from 'body-parser';
-
 import 'dotenv/config';
+import { db_insert } from './database';
 const uri = process.env.DB_URL;
 const app = express();
 
@@ -40,6 +40,8 @@ wss.on('connection', (ws, request, client) => {
 
   ws.on('message', (data) => {
     const message = JSON.parse(data);
-    console.log(message);
+    if (typeof message === 'object') {
+      db_insert('messages', message);
+    }
   });
 });
