@@ -5,6 +5,7 @@ import { MongoClient } from 'mongodb';
 import bodyParser from 'body-parser';
 import 'dotenv/config';
 import { db_insert } from './database';
+import { insert_user } from './functions';
 const uri = process.env.DB_URL;
 const app = express();
 
@@ -42,6 +43,12 @@ wss.on('connection', (ws, request, client) => {
     const message = JSON.parse(data);
     if (typeof message === 'object') {
       db_insert('messages', message);
+
+      const user = message.user_info;
+
+      if (user) {
+        insert_user(user);
+      }
     }
   });
 });

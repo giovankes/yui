@@ -15,3 +15,17 @@ export function db_insert(collection, data) {
     });
   });
 }
+
+export async function db_findone(collection, data) {
+  let result;
+  await connect.then(async () => {
+    result = await dbo.collection(collection).findOne(data);
+  });
+  if (result === undefined) {
+    result = false;
+  }
+  if (result === null) {
+    result = false;
+  }
+  return result;
+}
